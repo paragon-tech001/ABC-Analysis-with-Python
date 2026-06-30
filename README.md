@@ -6,7 +6,7 @@ Not all inventory items deserve the same level of attention.
 
 **ABC Analysis** is one of the most widely used inventory classification techniques in supply chain management. Based on the **Pareto Principle (80/20 Rule)**, it categorizes inventory according to its contribution to the total annual consumption value. This enables organizations to focus their efforts on the relatively small number of items that account for the majority of inventory value.
 
-In this project, an end-to-end ABC Analysis is implemented in **Python** using **Pandas** and **Matplotlib**, from data preparation and classification to visualization and export.
+In this project, an end-to-end ABC Analysis is implemented in Python using Pandas and Matplotlib, from data preparation and classification to visualization and export.
 
 ---
 
@@ -294,3 +294,139 @@ plt.show()
 ```
 
 ![](ABC_Category_Distribution.png)
+
+## 📈 Visualization: Distribution of Inventory Items Across ABC Categories
+
+``` python
+import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
+
+# -------------------------------------
+# Total Annual Consumption by Category
+# -------------------------------------
+value = (
+    df.groupby("Category")["Annual_Consumption"]
+      .sum()
+      .reindex(["A", "B", "C"])
+)
+
+# -------------------------------------
+# Plot Settings
+# -------------------------------------
+plt.style.use("ggplot")
+
+fig, ax = plt.subplots(figsize=(12, 7))
+
+# Professional ABC colors
+colors = ["#2E8B57", "#F4A261", "#E76F51"]
+
+bars = ax.bar(
+    value.index,
+    value.values,
+    color=colors,
+    width=0.6,
+    edgecolor="black",
+    linewidth=0.8
+)
+
+# -------------------------------------
+# Format Y-axis with commas
+# -------------------------------------
+ax.yaxis.set_major_formatter(StrMethodFormatter('{x:,.0f}'))
+
+# -------------------------------------
+# Value Labels
+# -------------------------------------
+for bar in bars:
+
+    height = bar.get_height()
+
+    ax.text(
+        bar.get_x() + bar.get_width()/2,
+        height + value.max()*0.015,
+        f"{height:,.0f}",
+        ha="center",
+        va="bottom",
+        fontsize=11,
+        fontweight="bold",
+        bbox=dict(
+            facecolor="white",
+            edgecolor="gray",
+            boxstyle="round,pad=0.25"
+        )
+    )
+
+# -------------------------------------
+# Labels & Title
+# -------------------------------------
+ax.set_title(
+    "Annual Inventory Value by ABC Category",
+    fontsize=18,
+    fontweight="bold",
+    pad=18
+)
+
+ax.set_xlabel(
+    "ABC Category",
+    fontsize=13
+)
+
+ax.set_ylabel(
+    "Annual Consumption Value",
+    fontsize=13
+)
+
+# -------------------------------------
+# Grid
+# -------------------------------------
+ax.grid(axis="y", linestyle="--", alpha=0.4)
+ax.set_axisbelow(True)
+
+# -------------------------------------
+# Remove extra borders
+# -------------------------------------
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+
+ax.tick_params(axis="x", labelsize=12)
+ax.tick_params(axis="y", labelsize=11)
+
+# -------------------------------------
+# Add some headroom
+# -------------------------------------
+ax.set_ylim(0, value.max()*1.18)
+
+# -------------------------------------
+# Save High Resolution
+# -------------------------------------
+plt.tight_layout()
+
+plt.savefig(
+    "ABC_Inventory_Value.png",
+    dpi=300,
+    bbox_inches="tight",
+    facecolor="white"
+)
+
+plt.show()
+```
+![](ABC_Inventory_Value.png)
+
+## ABC Classification Summary
+
+```python
+summary = df.groupby('Category')['Annual_Consumption'].sum().reset_index()
+
+# summary.head()
+
+total_sum = summary['Annual_Consumption'].sum()
+summary['Percentage_of_Total'] = ((summary['Annual_Consumption'] /total_sum) *100 ).round(2)
+summary['Percentage_of_Total'] = summary['Percentage_of_Total'].astype(str) + "%"
+summary
+```
+
+| Category | Annual_Consumption | Percentage_of_Total |
+|:--------:|-------------------:|--------------------:|
+| A | 96,460,244.07 | 79.37% |
+| B | 18,749,640.98 | 15.43% |
+| C | 6,316,943.60 | 5.20% |
